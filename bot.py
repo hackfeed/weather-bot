@@ -68,26 +68,29 @@ def send_message(user_id, message):
 def listen_events(poll):
     for event in poll.listen():
         if event.type == VkEventType.MESSAGE_NEW:
-            msg_text = event.text.lower().strip(meta.STRIP_CHARACTERS)
+            if event.to_me:
+                msg_text = event.text.lower().strip(meta.STRIP_CHARACTERS)
 
-            if msg_text in meta.WELCOME_MESSAGES:
-                send_message(event.user_id, meta.BOT_MESSAGE)
-            elif msg_text.startswith(tuple(meta.WEATHER_MESSAGES)):
-                city = msg_text
+                if msg_text in meta.WELCOME_MESSAGES:
+                    send_message(event.user_id, meta.BOT_MESSAGE)
+                elif msg_text.startswith(tuple(meta.WEATHER_MESSAGES)):
+                    city = msg_text
 
-                for msg in meta.WEATHER_MESSAGES:
-                    if city.startswith(msg):
-                        city = city[len(msg):]
-                        break
+                    for msg in meta.WEATHER_MESSAGES:
+                        if city.startswith(msg):
+                            city = city[len(msg):]
+                            break
 
-                city = city.split()[0]
-                city_normalized = morph.parse(city)[0].normal_form
+                    city = city.split()[0]
+                    city_normalized = morph.parse(city)[0].normal_form
 
-                try:
-                    weather = get_weather(city_normalized)
-                    send_message(event.user_id, weather)
-                except pyowm.exceptions.api_response_error.NotFoundError:
-                    send_message(event.user_id, meta.CITY_NOT_FOUND_ERROR)
+                    try:
+                        weather = get_weather(city_normalized)
+                        send_message(event.user_id, weather)
+                    except pyowm.exceptions.api_response_error.NotFoundError:
+                        send_message(event.user_id, meta.CITY_NOT_FOUND_ERROR)
+                else:
+                    send_message(event.user_id, meta.CMD_ERROR)
 
 
 if __name__ == "__main__":
