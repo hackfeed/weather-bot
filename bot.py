@@ -81,7 +81,12 @@ def listen_events(poll):
                             city = city[len(msg):]
                             break
 
-                    city = city.split()[0]
+                    try:
+                        city = city.split()[0]
+                    except IndexError:
+                        send_message(event.user_id, meta.CITY_NOT_FOUND_ERROR)
+                        continue
+
                     city_normalized = morph.parse(city)[0].normal_form
 
                     try:
